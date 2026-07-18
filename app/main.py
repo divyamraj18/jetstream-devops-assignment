@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import ReturnDocument
 
+from instrumentation import setup_telemetry
 from models import ArticleCreate, ArticleResponse, ArticleUpdate
 
 app = FastAPI(
@@ -15,6 +16,8 @@ app = FastAPI(
     description="CRUD API for articles, backed by a MongoDB replica set.",
     version="1.0.0",
 )
+
+setup_telemetry(app)
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("MONGO_DB_NAME", "jetstream")
