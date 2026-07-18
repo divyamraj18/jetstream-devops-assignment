@@ -8,10 +8,10 @@ venv/
 .terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 
-# K3d / kube
+# kube
 kubeconfig*.yaml
+infra/*-config
 
 # Editors / OS
 .vscode/
