@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: articles-api
+  labels:
+    app: articles-api
+spec:
+  type: ClusterIP
+  selector:
+    app: articles-api
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
