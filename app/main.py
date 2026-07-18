@@ -42,6 +42,22 @@ def parse_object_id(article_id: str) -> ObjectId:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid article id")
 
 
+@app.get("/healthz", status_code=status.HTTP_200_OK)
+async def liveness():
+    """Liveness probe: only confirms the process is up and serving requests."""
+    return {"status": "alive"}
+
+
+@app.get("/ready", status_code=status.HTTP_200_OK)
+async def readiness():
+    """Readiness probe: confirms the MongoDB connection is actually usable."""
+    try:
+        await db.command("ping")
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MongoDB not reachable")
+    return {"status": "ready"}
+
+
 @app.post("/articles", response_model=ArticleResponse, status_code=status.HTTP_201_CREATED)
 async def create_article(article: ArticleCreate):
     now = datetime.now(timezone.utc)
