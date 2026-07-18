@@ -29,11 +29,13 @@ spec:
               command: ["mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             exec:
               command: ["mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 20
             periodSeconds: 20
+            timeoutSeconds: 5
   volumeClaimTemplates:
     - metadata:
         name: data
