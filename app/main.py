@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timezone
 from typing import List
@@ -18,6 +19,8 @@ app = FastAPI(
 )
 
 setup_telemetry(app)
+
+logger = logging.getLogger("jetstream.articles")
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("MONGO_DB_NAME", "jetstream")
@@ -48,6 +51,7 @@ def parse_object_id(article_id: str) -> ObjectId:
 @app.get("/healthz", status_code=status.HTTP_200_OK)
 async def liveness():
     """Liveness probe: only confirms the process is up and serving requests."""
+    logger.info("Liveness check passed")
     return {"status": "alive"}
 
 
@@ -57,7 +61,9 @@ async def readiness():
     try:
         await db.command("ping")
     except Exception:
+        logger.warning("Readiness check failed: MongoDB unreachable")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MongoDB not reachable")
+    logger.info("Readiness check passed")
     return {"status": "ready"}
 
 
@@ -69,12 +75,14 @@ async def create_article(article: ArticleCreate):
     doc["updated_at"] = now
     result = await articles_collection.insert_one(doc)
     doc["_id"] = result.inserted_id
+    logger.info("Article created: id=%s title=%r", result.inserted_id, article.title)
     return article_to_response(doc)
 
 
 @app.get("/articles", response_model=List[ArticleResponse])
 async def list_articles():
     docs = await articles_collection.find().to_list(length=None)
+    logger.info("Listed %d articles", len(docs))
     return [article_to_response(doc) for doc in docs]
 
 
@@ -82,7 +90,9 @@ async def list_articles():
 async def get_article(article_id: str):
     doc = await articles_collection.find_one({"_id": parse_object_id(article_id)})
     if doc is None:
+        logger.warning("Article not found: id=%s", article_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
+    logger.info("Article fetched: id=%s", article_id)
     return article_to_response(doc)
 
 
@@ -99,7 +109,9 @@ async def update_article(article_id: str, article: ArticleUpdate):
         return_document=ReturnDocument.AFTER,
     )
     if doc is None:
+        logger.warning("Article not found for update: id=%s", article_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
+    logger.info("Article updated: id=%s fields=%s", article_id, list(updates.keys()))
     return article_to_response(doc)
 
 
@@ -107,4 +119,6 @@ async def update_article(article_id: str, article: ArticleUpdate):
 async def delete_article(article_id: str):
     result = await articles_collection.delete_one({"_id": parse_object_id(article_id)})
     if result.deleted_count == 0:
+        logger.warning("Article not found for delete: id=%s", article_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
+    logger.info("Article deleted: id=%s", article_id)
