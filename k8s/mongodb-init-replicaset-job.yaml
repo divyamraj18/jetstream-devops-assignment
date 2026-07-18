@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-init-replicaset
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongo-init
+          image: mongo:7
+          command:
+            - bash
+            - -c
+            - |
+              set -e
+              for host in mongodb-0.mongodb-headless mongodb-1.mongodb-headless mongodb-2.mongodb-headless; do
+                until mongosh --host "$host" --quiet --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+                  echo "waiting for $host..."
+                  sleep 3
+                done
+              done
+
+              already_initiated=$(mongosh --host mongodb-0.mongodb-headless --quiet --eval "rs.status().ok" 2>/dev/null || echo "0")
+              if [ "$already_initiated" = "1" ]; then
+                echo "replica set already initiated"
+                exit 0
+              fi
+
+              mongosh --host mongodb-0.mongodb-headless --eval '
+                rs.initiate({
+                  _id: "rs0",
+                  members: [
+                    { _id: 0, host: "mongodb-0.mongodb-headless:27017" },
+                    { _id: 1, host: "mongodb-1.mongodb-headless:27017" },
+                    { _id: 2, host: "mongodb-2.mongodb-headless:27017" }
+                  ]
+                })
+              '
