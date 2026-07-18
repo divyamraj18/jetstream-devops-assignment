@@ -1,0 +1,14 @@
+replicaCount: 3
+
+image:
+  repository: mongo
+  tag: "7"
+
+replicaSetName: rs0
+
+storage:
+  className: standard
+  size: 1Gi
+
+probes:
+  timeoutSeconds: 5
