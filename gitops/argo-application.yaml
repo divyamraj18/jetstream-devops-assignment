@@ -6,10 +6,13 @@ metadata:
 spec:
   project: default
 
-  source:
-    repoURL: https://github.com/divyamraj18/jetstream-devops-assignment.git
-    targetRevision: master
-    path: k8s
+  sources:
+    - repoURL: https://github.com/divyamraj18/jetstream-devops-assignment.git
+      targetRevision: master
+      path: charts/backend
+    - repoURL: https://github.com/divyamraj18/jetstream-devops-assignment.git
+      targetRevision: master
+      path: charts/mongodb
 
   destination:
     server: https://kubernetes.default.svc
