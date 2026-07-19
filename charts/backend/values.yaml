@@ -26,3 +26,6 @@ resources:
 
 podDisruptionBudget:
   minAvailable: 2
+
+ingress:
+  className: nginx
