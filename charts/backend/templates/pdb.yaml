@@ -2,6 +2,8 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: articles-api-pdb
+  labels:
+    app.kubernetes.io/part-of: jetstream
 spec:
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   selector:

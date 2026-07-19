@@ -4,6 +4,7 @@ metadata:
   name: articles-api
   labels:
     app: articles-api
+    app.kubernetes.io/part-of: jetstream
 spec:
   type: ClusterIP
   selector:
