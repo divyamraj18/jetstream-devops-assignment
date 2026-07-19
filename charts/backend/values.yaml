@@ -29,3 +29,8 @@ podDisruptionBudget:
 
 ingress:
   className: nginx
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilization: 70

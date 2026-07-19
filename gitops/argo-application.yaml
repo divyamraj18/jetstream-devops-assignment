@@ -18,6 +18,16 @@ spec:
     server: https://kubernetes.default.svc
     namespace: default
 
+  # The HPA (charts/backend/templates/hpa.yaml) manages replica count
+  # dynamically. Without this, ArgoCD's selfHeal would fight the autoscaler
+  # by forcing spec.replicas back to the chart's static value every sync.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: articles-api
+      jsonPointers:
+        - /spec/replicas
+
   syncPolicy:
     automated:
       prune: true
