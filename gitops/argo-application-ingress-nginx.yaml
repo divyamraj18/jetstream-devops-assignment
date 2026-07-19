@@ -15,6 +15,12 @@ spec:
         controller:
           hostPort:
             enabled: true
+          service:
+            # kind has no cloud LoadBalancer provisioner - this would sit in
+            # <pending> forever and keep ArgoCD's health check stuck on
+            # "Progressing". Traffic reaches the controller via hostPort
+            # (wired to kind's 8080->80 port mapping), not this Service.
+            type: ClusterIP
           nodeSelector:
             kubernetes.io/os: linux
             ingress-ready: "true"
