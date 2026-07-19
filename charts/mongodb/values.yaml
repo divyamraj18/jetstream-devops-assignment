@@ -12,3 +12,6 @@ storage:
 
 probes:
   timeoutSeconds: 5
+
+podDisruptionBudget:
+  minAvailable: 2
